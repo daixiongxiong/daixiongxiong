@@ -1,0 +1,49 @@
+import  java.io.BufferedReader;
+import  java.io.FileReader;
+import  java.io.FileWriter;
+import  java.io.IOException;
+import  java.util.HashMap;
+import  java.util.Map;
+import  java.util.StringTokenizer;
+public  class  PaperCheck  {
+    public  static  void  main(String[]  args)  {
+        if  (args.length  !=  3)  {
+            System.out.println("Usage java  PaperCheck  <original  file  path>  <plagiarized  file  path>  <output  file  path>");                return;}            String  originalFilePath  =  args[0];            String  plagiarizedFilePath  =  args[1];            String  outputFilePath  =  args[2];            String  originalContent  =  readFileContent(originalFilePath);            String  plagiarizedContent  =  readFileContent(plagiarizedFilePath);            double  similarity  =  calculateSimilarity(originalContent,plagiarizedContent);            writeResultToFile(outputFilePath,similarity);        }
+    private  static  String  readFileContent(String  filePath)  {
+        StringBuilder  content  =  new  StringBuilder();
+        try  (BufferedReader  reader  =  new  BufferedReader(new  FileReader(filePath)))  {
+            String  line;while  ((line  =  reader.readLine())  !=  null)  {
+                content.append(line).append(" ");
+            }
+        }
+        catch  (IOException  e)  {
+            System.err.println("Error  reading  file  "  +  e.getMessage());
+        }
+        return  content.toString();
+    }
+        private  static  double  calculateSimilarity(String  originalContent,String  plagiarizedContent)  {
+        Map<String,Integer>  originalWordCount  =  new  HashMap<>();
+        Map<String,Integer>  plagiarizedWordCount  =  new  HashMap<>();
+            for  (String  word  :  originalContent.split("\\s+"))  {
+                originalWordCount.put(word,originalWordCount.getOrDefault(word,0)  +  1);
+            }
+            for  (String  word  :  plagiarizedContent.split("\\s+"))  {
+                plagiarizedWordCount.put(word,plagiarizedWordCount.getOrDefault(word,0)  +  1);
+            }
+            int  commonWordCount  =  0;
+            for  (String  word  :  originalWordCount.keySet())  {
+                if  (plagiarizedWordCount.containsKey(word))  {
+                    commonWordCount  +=  Math.min(originalWordCount.get(word),  plagiarizedWordCount.get(word));
+                }
+            }
+            return  (double)  commonWordCount  /  (double)  Math.max(originalContent.length(),  plagiarizedContent.length());
+    }
+        private  static  void  writeResultToFile(String  outputFilePath,double  similarity)  {
+        try  (FileWriter  writer  =  new  FileWriter(outputFilePath))  {
+            writer.write("Similarity "  +  similarity);
+        }
+        catch  (IOException  e)  {
+            System.err.println("Error  writing  result  to  file  "  +  e.getMessage());
+        }
+    }
+}
